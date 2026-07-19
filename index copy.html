@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>3D Viewer</title>
+
+	<!-- Tailwind -->
+	<script src="js/tailwindcss.js"></script>
+
+	<!-- Vue -->
+	<script src="js/vue.global.js"></script>
+
+	<!-- Babylon -->
+	<script src="js/babylon.js"></script>
+	<script src="js/babylonjs.loaders.min.js"></script>
+	<script src="js/babylon.gridMaterial.min.js"></script>
+</head>
+
+<body>
+
+<div id="app">
+    <div class="p-2 bg-gray-200">
+        Mesh đã chọn: {{ selectedMesh }}
+    </div>
+
+    <canvas ref="canvas" class="w-full h-screen"></canvas>
+</div>
+
+<script>
+const app = Vue.createApp({
+
+    data() {
+        return {
+            engine: null,
+            scene: null,
+            selectedMesh: ""
+        }
+    },
+
+    mounted() {
+        this.initScene();
+    },
+
+    methods: {
+
+        initScene() {
+
+            const canvas = this.$refs.canvas;
+
+            this.engine = new BABYLON.Engine(canvas, true);
+            this.scene = new BABYLON.Scene(this.engine);
+
+            const camera = new BABYLON.ArcRotateCamera(
+                "camera",
+                0,
+                Math.PI / 3,
+                5,
+                BABYLON.Vector3.Zero(),
+                this.scene
+            );
+
+            camera.attachControl(canvas, true);
+
+            new BABYLON.HemisphericLight(
+                "light",
+                new BABYLON.Vector3(0, 1, 0),
+                this.scene
+            );
+
+            // Mesh mẫu
+            BABYLON.MeshBuilder.CreateBox(
+                "Box",
+                {},
+                this.scene
+            );
+
+            BABYLON.MeshBuilder.CreateSphere(
+                "Sphere",
+                {},
+                this.scene
+            ).position.x = 2;
+
+            // Bắt sự kiện click mesh
+            this.scene.onPointerObservable.add((pointerInfo) => {
+
+                if (pointerInfo.type ===BABYLON.PointerEventTypes.POINTERPICK) {
+
+                    const mesh = pointerInfo.pickInfo.pickedMesh;
+
+                    if (mesh) {
+                        this.selectedMesh = mesh.name;
+                        console.log("Đã chọn:",his.selectedMesh);
+                    }
+
+                }
+
+            });
+
+            this.engine.runRenderLoop(() => {
+                this.scene.render();
+            });
+
+        }
+
+    }
+
+});
+
+app.mount("#app");
+</script>
+</body>
+
+</html>
